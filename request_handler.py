@@ -25,8 +25,20 @@ class HandleRequests(BaseHTTPRequestHandler):
     # It handles any GET request.
     def do_GET(self):
         """GET REQUESTS | GET REQUESTS"""
-        self._set_headers(200)
         response = {}  # Default response
+            
+
+
+# What are the two possible returned data types when you invoke the function to get a single animal from the list?
+#   String or null
+# After the function is invoked, check if it returned the Python version of null.
+#
+# If an animal was found set the correct status code.
+# 200
+# If an animal was not found set the correct status code.
+# 404
+# If you want to be fancy, set a custom message to send back to the client if an animal was not found (see animation above).
+#
 
         # Parse the URL and capture the tuple that is returned
         (resource, id) = self.parse_url(self.path)
@@ -54,6 +66,12 @@ class HandleRequests(BaseHTTPRequestHandler):
                 response = get_single_customer(id)
             else:
                 response = get_all_customers()
+
+        if response is not None:
+            self._set_headers(200)
+        else:
+            self._set_headers(404)
+
         self.wfile.write(json.dumps(response).encode())
 
     # Here's a method on the class that overrides the parent's method.
@@ -163,7 +181,7 @@ class HandleRequests(BaseHTTPRequestHandler):
         self.end_headers()
 
     def parse_url(self, path):
-        """the squiggles really bugged me"""
+        """I'm not sure ab this one yet"""
         # Just like splitting a string in JavaScript. If the
         # path is "/animals/1", the resulting list will
         # have "" at index 0, "animals" at index 1, and "1"
