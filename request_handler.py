@@ -78,7 +78,7 @@ class HandleRequests(BaseHTTPRequestHandler):
     # It handles any POST request.
     def do_POST(self):
         """POST REQUESTS | POST REQUESTS"""
-        self._set_headers(201)
+        # self._set_headers(201)
         content_len = int(self.headers.get('content-length', 0))
         post_body = self.rfile.read(content_len)
 
@@ -99,8 +99,16 @@ class HandleRequests(BaseHTTPRequestHandler):
         # function next.
         if resource == "animals":
             new_animal = create_animal(post_body)
+            if "name" in post_body and "address" in post_body:
+                self._set_headers(201)
+                created_resource = create_location(post_body)
+            else:
+                self._set_headers(400)
+                created_resource = {
+                "message": f'{"name is required" if "name" not post_body else ""} {"address is required" if "address" not post_body else ""}'
+                }
             self.wfile.write(json.dumps(new_animal).encode())
-        # Encode the new animal and send in response
+
         if resource == "locations":
             new_location = create_location(post_body)
             self.wfile.write(json.dumps(new_location).encode())
