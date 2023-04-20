@@ -179,3 +179,65 @@ def update_animal(id, new_animal):
             # Found the animal. Update the value.
             ANIMALS[index] = new_animal
             break
+
+
+#NEXT - Get animals by location
+def get_animals_by_location(location_id):
+    """Allows us to find animals by location"""
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        # Write the SQL query to get the information you want
+        db_cursor.execute("""
+        select
+            c.id,
+            c.name,
+            c.breed,
+            c.status,
+            c.customer_id,
+            c.location_id
+        from animal c
+        WHERE c.location_id = ?
+        """, ( location_id, ))
+
+        animals = []
+        dataset = db_cursor.fetchall()
+
+        for row in dataset:
+            animal = Animal(row['id'], row['name'], row['breed'],
+                                row['status'] , row['customer_id'], row['location_id'])
+            animals.append(animal.__dict__)
+
+    return animals
+
+def get_animals_by_status(status):
+    """Allows us to find animals by status"""
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        # Write the SQL query to get the information you want
+        db_cursor.execute("""
+        select
+            c.id,
+            c.name,
+            c.status,
+            c.breed,
+            c.customer_id,
+            c.location_id
+        from animal c
+        WHERE c.status = ?
+        """, ( status, ))
+
+        animals = []
+        dataset = db_cursor.fetchall()
+
+        for row in dataset:
+            animal = Animal(row['id'], row['name'], row['breed'],
+                            row['status'], row['customer_id'], row['location_id'])
+            animals.append(animal.__dict__)
+
+    return animals
+#Order is important! Breed & Status were reversed and
+#the table still displayed, but it didn't flag it

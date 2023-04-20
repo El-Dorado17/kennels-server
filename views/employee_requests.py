@@ -120,4 +120,30 @@ def update_employee(id, new_employee):
             EMPLOYEES[index] = new_employee
             break
 
-#Commenting for Github practice!
+#Employee by location
+def get_employees_by_location(location_id):
+    """Allows us to find employees by location"""
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        conn.row_factory = sqlite3.Row
+        db_cursor = conn.cursor()
+
+        # Write the SQL query to get the information you want
+        db_cursor.execute("""
+        select
+            c.id,
+            c.name,
+            c.address,
+            c.location_id
+        from employee c
+        WHERE c.location_id = ?
+        """, ( location_id, ))
+
+        employees = []
+        dataset = db_cursor.fetchall()
+
+        for row in dataset:
+            employee = Employee(row['id'], row['name'], row['address'],
+                                row['location_id'])
+            employees.append(employee.__dict__)
+
+    return employees

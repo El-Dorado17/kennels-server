@@ -13,6 +13,10 @@ from views.customer_requests import get_all_customers, get_single_customer
 from views.employee_requests import get_all_employees, get_single_employee
 from views.location_requests import get_all_locations, get_single_location
 from views.customer_requests import get_customers_by_email
+from views.animal_requests import get_animals_by_location
+from views.animal_requests import get_animals_by_status
+from views.employee_requests import get_employees_by_location
+
 # add this import to the top of the file
 from urllib.parse import urlparse, parse_qs
 
@@ -68,6 +72,12 @@ class HandleRequests(BaseHTTPRequestHandler):
             # see if the query dictionary has an email key
             if query.get('email') and resource == 'customers':
                 response = get_customers_by_email(query['email'][0])
+            elif query.get('location_id') and resource == 'animals':
+                response = get_animals_by_location(query['location_id'][0])
+            elif query.get('status') and resource == 'animals':
+                response = get_animals_by_status(query['status'][0])
+            elif query.get('location_id') and resource == 'employees':
+                response = get_employees_by_location(query['location_id'][0])
 
         if response is not None:
             self._set_headers(200)
