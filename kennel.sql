@@ -69,3 +69,4 @@ SELECT
     a.customer_id
 FROM animal a
 WHERE a.id = 5
+
