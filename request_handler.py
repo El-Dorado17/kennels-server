@@ -34,7 +34,7 @@ class HandleRequests(BaseHTTPRequestHandler):
     # It handles any GET request.
     def do_GET(self):
         """retreives whatever resource we ask for"""
-        self._set_headers(200)
+        # self._set_headers(200) <-- This being here again prevented me from logging in!
 
         response = {}
 
