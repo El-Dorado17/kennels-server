@@ -110,12 +110,43 @@ def delete_customer(id):
         CUSTOMERS.pop(customer_index)
 
 
+
 def update_customer(id, new_customer):
-    """PUT/replace things!"""
-    for index, customer in enumerate(CUSTOMERS):
-        if customer["id"] == id:
-            CUSTOMERS[index] = new_customer
-            break
+    """Update customers"""
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE Customer
+            SET
+                id = ?,
+                name = ?,
+                address = ?,
+                email = ?,
+                password = ?
+        WHERE id = ?
+        """, (new_customer['id'], new_customer['name'], new_customer['address'],
+            new_customer['email'], new_customer['password']
+            ))
+
+        # Were any rows affected?
+        # Did the client send an `id` that exists?
+        rows_affected = db_cursor.rowcount
+
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
+    else:
+        # Forces 204 response by main module
+        return True
+
+
+# def update_customer(id, new_customer):
+#     """PUT/replace things!"""
+#     for index, customer in enumerate(CUSTOMERS):
+#         if customer["id"] == id:
+#             CUSTOMERS[index] = new_customer
+#             break
 
 def get_customers_by_email(email):
     """Allows us to find customers by email"""

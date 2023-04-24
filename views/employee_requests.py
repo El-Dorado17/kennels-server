@@ -1,6 +1,7 @@
 import sqlite3
 import json
 from models import Employee
+from models import Location
 
 EMPLOYEES = [
     {
@@ -25,8 +26,12 @@ def get_all_employees():
             a.id,
             a.name,
             a.address,
-            a.location_id
+            a.location_id,
+            l.name location_name,
+            l.address location_address
         FROM employee a
+        JOIN Location l
+            ON l.id = a.location_id
         """)
 
         # Initialize an empty list to hold all employee representations
@@ -44,6 +49,10 @@ def get_all_employees():
             # employee class above.
             employee = Employee(row['id'],
                                 row['name'], row['address'], row['location_id'])
+
+            location = Location(row['id'], row['location_name'], row['location_address'])
+
+            employee.location = location.__dict__
 
             employees.append(employee.__dict__)
 
@@ -113,12 +122,44 @@ def delete_employee(id):
         EMPLOYEES.pop(employee_index)
 
 
+
 def update_employee(id, new_employee):
-    """PUT/replace things!"""
-    for index, employee in enumerate(EMPLOYEES):
-        if employee["id"] == id:
-            EMPLOYEES[index] = new_employee
-            break
+    """Update employees"""
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE employee
+            SET
+                id = ?,
+                name = ?,
+                address = ?,
+                location_id = ?
+        WHERE id = ?
+        """, (new_employee['id'], new_employee['name'], new_employee['address'],
+            new_employee['location_id']
+            ))
+
+        # Were any rows affected?
+        # Did the client send an `id` that exists?
+        rows_affected = db_cursor.rowcount
+
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
+    else:
+        # Forces 204 response by main module
+        return True
+
+
+
+
+# def update_employee(id, new_employee):
+#     """PUT/replace things!"""
+#     for index, employee in enumerate(EMPLOYEES):
+#         if employee["id"] == id:
+#             EMPLOYEES[index] = new_employee
+#             break
 
 #Employee by location
 def get_employees_by_location(location_id):

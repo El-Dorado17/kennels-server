@@ -1,43 +1,11 @@
 import sqlite3
 import json
 from models import Animal
+from models import Location
+from models import Customer
 from .location_requests import get_single_location
 from .customer_requests import get_single_customer
 
-ANIMALS = [
-    {
-        "id": 1,
-        "name": "Snickers",
-        "species": "Dog",
-        "locationId": 1,
-        "customerId": 4,
-        "status": "Admitted"
-    },
-    {
-        "id": 2,
-        "name": "Eleanor",
-        "species": "Dog",
-        "locationId": 1,
-        "customerId": 2,
-        "status": "Admitted"
-    },
-    {
-        "id": 3,
-        "name": "Blue",
-        "species": "Cat",
-        "locationId": 2,
-        "customerId": 1,
-        "status": "Admitted"
-    },
-    {
-        "id": 4,
-        "name": "Roman",
-        "species": "Dog",
-        "locationId": 1,
-        "customerId": 2,
-        "status": "Admitted"
-    }
-]
 
 def get_all_animals():
     """Get all animals"""
@@ -56,8 +24,16 @@ def get_all_animals():
             a.breed,
             a.status,
             a.location_id,
-            a.customer_id
-        FROM animal a
+            a.customer_id,
+            l.name location_name,
+            l.address location_address,
+            c.name customer_name,
+            c.address customer_address
+        FROM Animal a
+        JOIN Location l
+            ON l.id = a.location_id
+        JOIN Customer c
+            ON c.id = a.customer_id
         """)
 
         # Initialize an empty list to hold all animal representations
@@ -76,6 +52,14 @@ def get_all_animals():
             animal = Animal(row['id'], row['name'], row['breed'],
                             row['status'], row['location_id'],
                             row['customer_id'])
+            
+            # Create a Location instance from the current row
+            location = Location(row['id'], row['location_name'], row['location_address'])
+            customer = Customer(row['id'], row['customer_name'], row['customer_address'])
+            #! animals, location, and customer show, but I also get empty strings of email&pass...
+            # Add the dictionary representation of the location to the animal
+            animal.location = location.__dict__
+            animal.customer = customer.__dict__
 
             animals.append(animal.__dict__)
 
@@ -111,46 +95,31 @@ def get_single_animal(id):
 
         return animal.__dict__
 
-# def get_all_animals():
-#     """This function is responsible for retrieving all animals"""
-#     return ANIMALS
+def create_animal(new_animal):
+    """Create animal in DB with SQL"""
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
 
-# # Function with a single parameter
-# def get_single_animal(id):
-#     """This function will only get a single animal based off matching ID"""
-#     # Variable to hold the found animal, if it exists
-#     requested_animal = None
+        db_cursor.execute("""
+        INSERT INTO Animal
+            ( name, breed, status, location_id, customer_id )
+        VALUES
+            ( ?, ?, ?, ?, ?);
+        """, (new_animal['name'], new_animal['breed'],
+            new_animal['status'], new_animal['location_Id'],
+            new_animal['customer_Id'], ))
 
-#     # Iterate the ANIMALS list above. Very similar to the
-#     # for..of loops you used in JavaScript.
-#     for animal in ANIMALS:
-#         # Dictionaries in Python use [] notation to find a key
-#         # instead of the dot notation that JavaScript used.
-#         if animal["id"] == id:
-#             requested_animal = animal
-#             matching_location = get_single_location(requested_animal["locationId"])
-#             requested_animal["location"] = matching_location
-#             matching_customer = get_single_customer(requested_animal["customerId"])
-#             requested_animal["customer"] = matching_customer
-#     return requested_animal
+        # The `lastrowid` property on the cursor will return
+        # the primary key of the last thing that got added to
+        # the database.
+        id = db_cursor.lastrowid
 
+        # Add the `id` property to the animal dictionary that
+        # was sent by the client so that the client sees the
+        # primary key in the response.
+        new_animal['id'] = id
 
-def create_animal(animal):
-    """This function is in charge of adding a new animal to the list!"""
-    # Get the id value of the last animal in the list
-    max_id = ANIMALS[-1]["id"]
-
-    # Add 1 to whatever that number is
-    new_id = max_id + 1
-
-    # Add an `id` property to the animal dictionary
-    animal["id"] = new_id
-
-    # Add the animal dictionary to the list
-    ANIMALS.append(animal)
-
-    # Return the dictionary with `id` property added
-    return animal
+    return new_animal
 
 
 def delete_animal(id):
@@ -164,32 +133,36 @@ def delete_animal(id):
         """, (id, ))
 
 
-# def delete_animal(id):
-#     """This function deletes animals obvi"""
-#     # Initial -1 value for animal index, in case one isn't found
-#     animal_index = -1
-
-#     # Iterate the ANIMALS list, but use enumerate() so that you
-#     # can access the index value of each item
-#     for index, animal in enumerate(ANIMALS):
-#         if animal["id"] == id:
-#             # Found the animal. Store the current index.
-#             animal_index = index
-
-#     # If the animal was found, use pop(int) to remove it from list
-#     if animal_index >= 0:
-#         ANIMALS.pop(animal_index)
-
 
 def update_animal(id, new_animal):
-    """PUT/replace things!"""
-    # Iterate the ANIMALS list, but use enumerate() so that
-    # you can access the index value of each item.
-    for index, animal in enumerate(ANIMALS):
-        if animal["id"] == id:
-            # Found the animal. Update the value.
-            ANIMALS[index] = new_animal
-            break
+    """Update animals"""
+    with sqlite3.connect("./kennel.sqlite3") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE Animal
+            SET
+                id = ?,
+                name = ?,
+                breed = ?,
+                status = ?,
+                location_id = ?,
+                customer_id = ?
+        WHERE id = ?
+        """, (new_animal['id'], new_animal['name'], new_animal['breed'],
+            new_animal['status'], new_animal['location_Id'],
+            new_animal['customer_Id']))
+
+        # Were any rows affected?
+        # Did the client send an `id` that exists?
+        rows_affected = db_cursor.rowcount
+
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
+    else:
+        # Forces 204 response by main module
+        return True
 
 
 #NEXT - Get animals by location
@@ -252,3 +225,108 @@ def get_animals_by_status(status):
     return animals
 #Order is important! Breed & Status were reversed and
 #the table still displayed, but it didn't flag it
+
+
+#Functions BEFORE connecting them to SQL
+ANIMALS = [
+    {
+        "id": 1,
+        "name": "Snickers",
+        "species": "Dog",
+        "locationId": 1,
+        "customerId": 4,
+        "status": "Admitted"
+    },
+    {
+        "id": 2,
+        "name": "Eleanor",
+        "species": "Dog",
+        "locationId": 1,
+        "customerId": 2,
+        "status": "Admitted"
+    },
+    {
+        "id": 3,
+        "name": "Blue",
+        "species": "Cat",
+        "locationId": 2,
+        "customerId": 1,
+        "status": "Admitted"
+    },
+    {
+        "id": 4,
+        "name": "Roman",
+        "species": "Dog",
+        "locationId": 1,
+        "customerId": 2,
+        "status": "Admitted"
+    }
+]
+# def get_all_animals():
+#     """This function is responsible for retrieving all animals"""
+#     return ANIMALS
+
+
+# # Function with a single parameter
+# def get_single_animal(id):
+#     """This function will only get a single animal based off matching ID"""
+#     # Variable to hold the found animal, if it exists
+#     requested_animal = None
+
+#     # Iterate the ANIMALS list above. Very similar to the
+#     # for..of loops you used in JavaScript.
+#     for animal in ANIMALS:
+#         # Dictionaries in Python use [] notation to find a key
+#         # instead of the dot notation that JavaScript used.
+#         if animal["id"] == id:
+#             requested_animal = animal
+#             matching_location = get_single_location(requested_animal["locationId"])
+#             requested_animal["location"] = matching_location
+#             matching_customer = get_single_customer(requested_animal["customerId"])
+#             requested_animal["customer"] = matching_customer
+#     return requested_animal
+
+
+# def delete_animal(id):
+#     """This function deletes animals obvi"""
+#     # Initial -1 value for animal index, in case one isn't found
+#     animal_index = -1
+
+#     # Iterate the ANIMALS list, but use enumerate() so that you
+#     # can access the index value of each item
+#     for index, animal in enumerate(ANIMALS):
+#         if animal["id"] == id:
+#             # Found the animal. Store the current index.
+#             animal_index = index
+
+#     # If the animal was found, use pop(int) to remove it from list
+#     if animal_index >= 0:
+#         ANIMALS.pop(animal_index)
+
+
+# def update_animal(id, new_animal):
+#     """PUT/replace things!"""
+#     # Iterate the ANIMALS list, but use enumerate() so that
+#     # you can access the index value of each item.
+#     for index, animal in enumerate(ANIMALS):
+#         if animal["id"] == id:
+#             # Found the animal. Update the value.
+#             ANIMALS[index] = new_animal
+#             break
+
+# def create_animal(animal):
+#     """This function is in charge of adding a new animal to the list!"""
+#     # Get the id value of the last animal in the list
+#     max_id = ANIMALS[-1]["id"]
+
+#     # Add 1 to whatever that number is
+#     new_id = max_id + 1
+
+#     # Add an `id` property to the animal dictionary
+#     animal["id"] = new_id
+
+#     # Add the animal dictionary to the list
+#     ANIMALS.append(animal)
+
+#     # Return the dictionary with `id` property added
+#     return animal
