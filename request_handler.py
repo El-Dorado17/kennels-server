@@ -2,6 +2,8 @@
 #the request comes here first and we check top see which module it needs to go to. 
 #(see animal requests)
 
+#GET< POST, DELETE, AND PUT are all here, but #? what is DO
+
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from views.animal_requests import create_animal, delete_animal
