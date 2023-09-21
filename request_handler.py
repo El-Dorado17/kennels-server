@@ -3,6 +3,8 @@
 #(see animal requests)
 
 #GET< POST, DELETE, AND PUT are all here, but #? what is DO
+#doOptions handles OPTIONS request and allows the appropiate CORS Headers to communicate across domains
+#If we could communicate across any domain ever, the application wouldn't be very secure
 
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
