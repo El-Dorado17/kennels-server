@@ -1,4 +1,6 @@
 #CHAPTER 1
+#the request comes here first and we check top see which module it needs to go to. 
+#(see animal requests)
 
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer

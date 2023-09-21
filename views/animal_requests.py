@@ -1,4 +1,6 @@
 #CHAPTER 2
+#the request comes in here if it's related to aniumals
+
 
 import sqlite3
 import json
