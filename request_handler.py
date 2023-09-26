@@ -1,11 +1,13 @@
 #CHAPTER 1
-#the request comes here first and we check top see which module it needs to go to. 
+#the request comes here first and we check top see which module it needs to go to.
 #(see animal requests)
 
-#GET< POST, DELETE, AND PUT are all here, but #? what is DO
+#GET, POST, DELETE, AND PUT are all here
 #doOptions handles OPTIONS request and allows the appropiate CORS Headers to communicate across domains
 #If we could communicate across any domain ever, the application wouldn't be very secure
 
+# add this import to the top of the file
+from urllib.parse import urlparse, parse_qs
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from views.animal_requests import create_animal, delete_animal
@@ -25,24 +27,17 @@ from views.animal_requests import get_animals_by_location
 from views.animal_requests import get_animals_by_status
 from views.employee_requests import get_employees_by_location
 
-# add this import to the top of the file
-from urllib.parse import urlparse, parse_qs
-
-
-# Here's a class. It inherits from another class.
-# For now, think of a class as a container for functions that
-# work together for a common purpose. In this case, that
-# common purpose is to respond to HTTP requests from a client.
+#? Here's a class. It inherits from another class.
+#? For now, think of a class as a container for functions that work together for a common purpose.
+#? In this case, that common purpose is to respond to HTTP requests from a client.
 class HandleRequests(BaseHTTPRequestHandler):
-    # This is a Docstring it should be at the beginning of all classes and functions
-    # It gives a description of the class or function
+#? This is a Docstring it should be at the beginning of all classes and functions
+#? It gives a description of the class or function:
     """Controls the functionality of any GET, PUT, POST, DELETE requests to the server"""
-    # Here's a class function
-    # Here's a method on the class that overrides the parent's method.
-    # It handles any GET request.
+#? Here's a class function Here's a method on the class that overrides the parent's method.
+#? It handles any GET request.
     def do_GET(self):
         """retreives whatever resource we ask for"""
-        # self._set_headers(200) <-- This being here again prevented me from logging in!
 
         response = {}
 

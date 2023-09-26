@@ -1,5 +1,5 @@
 {
-    "python.formatting.autopep8Path": "/home/useradd/.pyenv/shims/autopep8",
+    "python.formatting.autopep8Path": "/home/dorado/.local/bin/autopep8",
     "python.linting.pylintEnabled": true,
     "python.analysis.diagnosticSeverityOverrides": {
         "reportGeneralTypeIssues": "none"
