@@ -12,3 +12,8 @@
 
 #used sqlite open database to open and view the sql table but I can't remember
 #how to do it from, scratch
+
+
+# Models are templates of what the data should have/look like
+# views are where we get the specific info needed
+# and req handler is where we outline what to do with the requests (get, psot, etc)
