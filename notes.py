@@ -23,4 +23,5 @@
 
 
 
-#try animals/1 in PostMan
+#try animals/1 in PostMan worked
+#same for employees/1
